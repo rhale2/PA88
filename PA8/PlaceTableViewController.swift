@@ -33,6 +33,9 @@ import CoreLocation
 class PlaceTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, GMSMapViewDelegate, CLLocationManagerDelegate, UISearchBarDelegate {
     var places: [Place] = [Place]()
     var placesClient: GMSPlacesClient!
+    var currentSearch: String = ""
+    var latitude: String = ""
+    var longitude: String = ""
     var search: Bool = false
     let locationManager = CLLocationManager()
     var currPlacesIndex: Int? = nil
@@ -42,13 +45,15 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
     @IBOutlet var tableView: UITableView!
     
     @IBAction func updateLocationButton(_ sender: UIBarButtonItem) {
+        let placesArray = GooglePlacesAPI.fetchPlaces(input: currentSearch, latitude: latitude, longitude: longitude)
         MBProgressHUD.showAdded(to: self.view, animated: true)
-        GooglePlacesAPI.fetchPlaces { (placeOptional) in
-            if let places = placeOptional {
-                self.places = places
-            }
-            MBProgressHUD.hide(for: self.view, animated: true)
+        
+        if let placesOptional = placesArray {
+            self.places = placesOptional
         }
+        
+        MBProgressHUD.hide(for: self.view, animated: true)
+        tableView.reloadData()
     }
     
     @IBAction func searchButtonPressed(_ sender: UIBarButtonItem) {
@@ -157,8 +162,8 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
         let latitude = String(coordinate.latitude)
         let longitude = String(coordinate.longitude)
             
-        GooglePlacesAPI.latitude = latitude
-        GooglePlacesAPI.longitude = longitude
+        self.latitude = latitude
+        self.longitude = longitude
     }
         
     func locationManager (_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -173,15 +178,15 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
     }
         
     func searchBar (_ searchBar: UISearchBar, textDidChange searchText: String) {
-        GooglePlacesAPI.input = searchText
-        GooglePlacesAPI.googleNearBySearchesURL(input: GooglePlacesAPI.input, latitude: GooglePlacesAPI.latitude, longitude: GooglePlacesAPI.longitude)
+        currentSearch = searchText
+        let placesArray = GooglePlacesAPI.fetchPlaces(input: currentSearch, latitude: latitude, longitude: longitude)
         MBProgressHUD.showAdded(to: self.view, animated: true)
-        GooglePlacesAPI.fetchPlaces { (placeOptional) in
-            if let places = placeOptional {
-                self.places = places
-            }
-            MBProgressHUD.hide(for: self.view, animated: true)
+        
+        if let placesOptional = placesArray {
+            self.places = placesOptional
         }
+        
+        MBProgressHUD.hide(for: self.view, animated: true)
         tableView.reloadData()
     }
         
