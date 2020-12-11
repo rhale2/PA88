@@ -27,5 +27,6 @@ struct Place {
     var vicinity: String
     var rating: String
     var photoRefrence: String
+    var openingHours: String
     
 }

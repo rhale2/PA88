@@ -77,48 +77,86 @@ struct GooglePlacesAPI {
         print(url)
         return url
     }
-    
-    static func fetchPlaces (input: String, latitude: String, longitude: String) -> [Place]? {
-        var place = [Place]()
-        let url = GooglePlacesAPI.googleNearBySearchesURL(input: input, latitude: latitude, longitude: longitude)
+    static func fetchPlaces (input: String, latitude: String, longitude: String, completion: @escaping ([Place]?) -> Void) {
+        let url = GooglePlacesAPI.googleNearBySearchesURL(input: input, latitude: latitude, longitude: latitude)
         let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
             if let data = dataOptional, let dataString = String(data: data, encoding: .utf8) {
                 print("we got data!!!")
                 print(dataString)
                 if let places = places(fromData: data) {
                     print("we got an [Place] with \(places.count) places")
-                    place = places
-                    print("PLACE: \(place)")
+                    DispatchQueue.main.async {
+                        completion(places)
+                    }
+                }
+                else {
+                    DispatchQueue.main.async {
+                        completion(nil)
+                    }
                 }
             }
             else {
                 if let error = errorOptional {
                     print("Error getting data \(error)")
                 }
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
             }
         }
         task.resume()
-        return place
     }
     
-    static func fetchPlaceImage (photoRefrence: String) -> Data {
-        var imageData = Data()
-        let url = GooglePlacesAPI.googlePlacePhotosURL(photoRefrence: photoRefrence)
+    static func fetchPlaceDetails (placeID: String, completion: @escaping ([PlaceDetails]?) -> Void) {
+        let url = GooglePlacesAPI.googlePlaceDetailsURL(placeID: placeID)
         let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
             if let data = dataOptional, let dataString = String(data: data, encoding: .utf8) {
-                print("we got photo data!!!")
+                print("we got data!!!")
                 print(dataString)
-                imageData = data
+                if let places = details(fromData: data) {
+                    print("we got an [Place] with \(places.count) places")
+                    DispatchQueue.main.async {
+                        completion(places)
+                    }
+                }
+                else {
+                    DispatchQueue.main.async {
+                        completion(nil)
+                    }
+                }
             }
             else {
                 if let error = errorOptional {
                     print("Error getting data \(error)")
                 }
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
             }
         }
         task.resume()
-        return imageData
     }
+    
+    static func fetchPlacePhoto (fromURLString urlString: String, completion: @escaping (UIImage?) -> Void) {
+        let url = GooglePlacesAPI.googlePlacePhotosURL(photoRefrence: urlString)
+           
+           let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
+               if let data = dataOptional, let image = UIImage(data: data) {
+                   DispatchQueue.main.async {
+                       completion(image)
+                   }
+               }
+               else {
+                   if let error = errorOptional {
+                       print("error fetching image \(error)")
+                   }
+                   DispatchQueue.main.async {
+                       completion(nil)
+                   }
+               }
+           }
+           task.resume()
+       }
     
     static func places (fromData data: Data) -> [Place]? {
         do {
@@ -146,51 +184,116 @@ struct GooglePlacesAPI {
         return nil
     }
     
-    static func photos (fromData data: Data) -> [[String: Any]] {
-        var photos: [[String: Any]] = [[:]]
+    static func details (fromData data: Data) -> [PlaceDetails]? {
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-            guard let jsonDictionary = jsonObject as? [String: Any], let photoArray = jsonDictionary["photos"] as? [[String: Any]] else {
+            guard let jsonDictionary = jsonObject as? [String: Any], let detailArray = jsonDictionary["photos"] as? [[String: Any]] else {
                 print("Error parsing JSON")
-                return photos
+                return nil
             }
-            photos = photoArray
             print("successfully got photoArray")
+            var details = [PlaceDetails]()
+            for detailsObject in detailArray {
+                if let detail = detail(fromJSON: detailsObject) {
+                    print("appending")
+                    details.append(detail)
+                }
+            }
+            if !details.isEmpty {
+                return details
+            }
         }
         catch {
             print("Error converting Data to JSON \(error)")
         }
         
-        return photos
+        return nil
     }
     
+    static func photos (fromData data: Data) -> [PlacePhoto]? {
+        do {
+            let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+            guard let jsonDictionary = jsonObject as? [String: Any], let photoArray = jsonDictionary["photos"] as? [[String: Any]] else {
+                print("Error parsing JSON")
+                return nil
+            }
+            print("successfully got photoArray")
+            var photos = [PlacePhoto]()
+            for photosObject in photoArray {
+                if let photo = photo(fromJSON: photosObject) {
+                    print("appending")
+                    photos.append(photo)
+                }
+            }
+            if !photos.isEmpty {
+                return photos
+            }
+        }
+        catch {
+            print("Error converting Data to JSON \(error)")
+        }
+        
+        return nil
+    }
+    
+    
+    
     static func place (fromJSON jsonPlace: [String: Any]) -> Place? {
-        guard let id = jsonPlace["place_id"] as? String else { // get photo array to have values
-            return nil
-        }
-              
-        guard let name = jsonPlace["name"] as? String else { // get photo array to have values
-            return nil
-        }
-              
-        guard let vicinity = jsonPlace["vicinity"] as? String else { // get photo array to have values
-            return nil
-        }
-              
-        guard let rating = jsonPlace["rating"] as? Double else { // get photo array to have values
-            return nil
-        }
-              
-        if let photoArray = jsonPlace["photos"] as? [[String: Any]] {
-            // if there is a photo!
-            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: photoArray.description)
+        guard let id = jsonPlace["place_id"] as? String else {
+            return Place(ID: "", name: "", vicinity: "", rating: "", photoRefrence: "", openingHours: "")
         }
         
-        else { // get photo array to have values
-            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "")
+        guard let name = jsonPlace["name"] as? String else {
+            return Place(ID: id.description, name: "", vicinity: "", rating: "", photoRefrence: "", openingHours: "")
         }
         
-        /*return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: photoArray.description)*/
+        guard let vicinity = jsonPlace["vicinity"] as? String else {
+            return Place(ID: id.description, name: name.description, vicinity: "", rating: "", photoRefrence: "", openingHours: "")
+        }
+        
+        guard let rating = jsonPlace["rating"] as? Double else {
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: "", photoRefrence: "", openingHours: "")
+        }
+        guard let open = jsonPlace["open_now"] as? Bool else {
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: "")
+        }
+        
+        guard let photoArray = jsonPlace["photos"] as? [[String: Any]], let photoURL = jsonPlace["photo_refrence"] as? String else {
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: open.description)
+        }
+        
+        return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: photoURL.description, openingHours: open.description)
+        
+        
+    }
+    
+    static func detail (fromJSON jsonDetail: [String: Any]) -> PlaceDetails? {
+        guard let address = jsonDetail["formatted_address"] as? String else {
+            return PlaceDetails(formattedPhoneNumber: "", formattedAddress: "", review: "")
+        }
+        
+        guard let phoneNumber = jsonDetail["formatted_phone_number"] as? String else {
+            return PlaceDetails(formattedPhoneNumber: "", formattedAddress: address.description, review: "")
+        }
+        
+        guard let review = jsonDetail["reviews"] as? [[String: Any]], let text = jsonDetail["text"] as? String else{
+            return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
+        }
+        
+        return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: text.description)
+    }
+    
+    static func photo (fromJSON jsonPhotos: [String: Any]) -> PlacePhoto? {
+        guard let photoArray = jsonPhotos["photos"] as? [[String: Any]] else { // get photo array to have values
+            return PlacePhoto(photos: "", photo_refrence: "")
+        }
+        
+        guard let photoURL = jsonPhotos["photo_reference"] as? String else { // get photo array to have values
+            return PlacePhoto(photos: photoArray.description, photo_refrence: "")
+        }
+        return PlacePhoto(photos: photoArray.description, photo_refrence: photoURL.description)
+        
+        
     }
     
 }

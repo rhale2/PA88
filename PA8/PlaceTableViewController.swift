@@ -44,16 +44,9 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
     @IBOutlet var searchBar: UISearchBar!
     @IBOutlet var tableView: UITableView!
     
+    
     @IBAction func updateLocationButton(_ sender: UIBarButtonItem) {
-        let placesArray = GooglePlacesAPI.fetchPlaces(input: currentSearch, latitude: latitude, longitude: longitude)
-        MBProgressHUD.showAdded(to: self.view, animated: true)
         
-        if let placesOptional = placesArray {
-            self.places = placesOptional
-        }
-        
-        MBProgressHUD.hide(for: self.view, animated: true)
-        tableView.reloadData()
     }
     
     @IBAction func searchButtonPressed(_ sender: UIBarButtonItem) {
@@ -75,16 +68,16 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
             print("disabled")
             // the user has turned off location services, airplane mode, HW failure, etc.
         }
-              
+        
         // Do any additional setup after loading the view.
     }
     
     /**
-    handles the preparation for segue
+     handles the preparation for segue
      
      - Parameter segue: The UIStorySegue
      - Parameter sender: The source
-    */
+     */
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let identifier = segue.identifier {
             if identifier == "DetailSegue" {
@@ -112,11 +105,11 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
     }
     
     /**
-    Places a place in a cell.
-         
-    - Parameter tableView: The Table View.
-    - Parameter indexPath: The cell position.
-    */
+     Places a place in a cell.
+     
+     - Parameter tableView: The Table View.
+     - Parameter indexPath: The cell position.
+     */
     func tableView (_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let row = indexPath.row
         let place = places[row]
@@ -161,37 +154,35 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
         let coordinate = location.coordinate
         let latitude = String(coordinate.latitude)
         let longitude = String(coordinate.longitude)
-            
+        
         self.latitude = latitude
         self.longitude = longitude
     }
-        
+    
     func locationManager (_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Error requesting location \(error)")
     }
-        
+    
     func setupLocationServices () {
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
         locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
         locationManager.startUpdatingLocation()
     }
-        
+    
     func searchBar (_ searchBar: UISearchBar, textDidChange searchText: String) {
         currentSearch = searchText
         MBProgressHUD.showAdded(to: self.view, animated: true)
-        let placesArray = GooglePlacesAPI.fetchPlaces(input: currentSearch, latitude: latitude, longitude: longitude)
-        
-       if let placesOptional = placesArray {
-            self.places = placesOptional
-            print("the places: \(places)")
+        GooglePlacesAPI.fetchPlaces(input: searchText, latitude: latitude, longitude: longitude) { (placeOptional) in
+            if let recievedPlaces = placeOptional {
+                print("in ViewController got the array back")
+                self.places = recievedPlaces
+            }
+            MBProgressHUD.hide(for: self.view, animated: true)
         }
-        
-        print("here: \(places)")
-        MBProgressHUD.hide(for: self.view, animated: true)
         tableView.reloadData()
     }
-        
+    
     func showSearchBar () {
         searchBar.alpha = 0
         navigationItem.titleView = searchBar

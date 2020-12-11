@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		4C4B7C76F15CA05BB8AE4EF4 /* Pods_PA8.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE029076D06ADED694532BDC /* Pods_PA8.framework */; };
 		92F5CCEF257DE37E00D15EBC /* GooglePlacesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F5CCEE257DE37E00D15EBC /* GooglePlacesAPI.swift */; };
+		BFA2429F2583015F007E1893 /* PlacePhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA2429E2583015F007E1893 /* PlacePhoto.swift */; };
+		BFA242A2258301E7007E1893 /* PlaceDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA242A1258301E7007E1893 /* PlaceDetails.swift */; };
 		BFFABC2D2571617B006E36BB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFABC2C2571617B006E36BB /* AppDelegate.swift */; };
 		BFFABC2F2571617B006E36BB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFABC2E2571617B006E36BB /* SceneDelegate.swift */; };
 		BFFABC312571617B006E36BB /* PlaceTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFABC302571617B006E36BB /* PlaceTableViewController.swift */; };
@@ -22,6 +24,8 @@
 /* Begin PBXFileReference section */
 		5BC2DF9704A0D27B5FAA3123 /* Pods-PA8.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PA8.debug.xcconfig"; path = "Target Support Files/Pods-PA8/Pods-PA8.debug.xcconfig"; sourceTree = "<group>"; };
 		92F5CCEE257DE37E00D15EBC /* GooglePlacesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GooglePlacesAPI.swift; sourceTree = "<group>"; };
+		BFA2429E2583015F007E1893 /* PlacePhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlacePhoto.swift; sourceTree = "<group>"; };
+		BFA242A1258301E7007E1893 /* PlaceDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceDetails.swift; sourceTree = "<group>"; };
 		BFFABC292571617B006E36BB /* PA8.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PA8.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFFABC2C2571617B006E36BB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BFFABC2E2571617B006E36BB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -79,14 +83,16 @@
 			children = (
 				BFFABC372571617E006E36BB /* LaunchScreen.storyboard */,
 				BFFABC322571617B006E36BB /* Main.storyboard */,
+				92F5CCEE257DE37E00D15EBC /* GooglePlacesAPI.swift */,
+				BFFABC40257161EC006E36BB /* Place.swift */,
+				BFA242A1258301E7007E1893 /* PlaceDetails.swift */,
+				BFA2429E2583015F007E1893 /* PlacePhoto.swift */,
 				BFFABC302571617B006E36BB /* PlaceTableViewController.swift */,
 				BFFABC4225716E42006E36BB /* PlaceDetailViewController.swift */,
-				BFFABC40257161EC006E36BB /* Place.swift */,
 				BFFABC2C2571617B006E36BB /* AppDelegate.swift */,
 				BFFABC2E2571617B006E36BB /* SceneDelegate.swift */,
 				BFFABC352571617E006E36BB /* Assets.xcassets */,
 				BFFABC3A2571617E006E36BB /* Info.plist */,
-				92F5CCEE257DE37E00D15EBC /* GooglePlacesAPI.swift */,
 			);
 			path = PA8;
 			sourceTree = "<group>";
@@ -233,10 +239,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BFA242A2258301E7007E1893 /* PlaceDetails.swift in Sources */,
 				92F5CCEF257DE37E00D15EBC /* GooglePlacesAPI.swift in Sources */,
 				BFFABC312571617B006E36BB /* PlaceTableViewController.swift in Sources */,
 				BFFABC2D2571617B006E36BB /* AppDelegate.swift in Sources */,
 				BFFABC4325716E42006E36BB /* PlaceDetailViewController.swift in Sources */,
+				BFA2429F2583015F007E1893 /* PlacePhoto.swift in Sources */,
 				BFFABC2F2571617B006E36BB /* SceneDelegate.swift in Sources */,
 				BFFABC41257161EC006E36BB /* Place.swift in Sources */,
 			);
