@@ -2,27 +2,15 @@
 //  ViewController.swift
 //  PA8
 //
-//  Created by Rebekah Hale on 11/27/20.
-//  Copyright © 2020 Rebekah Hale. All rights reserved.
+//  This file handles the PlaceTableViewController
+//  CPSC 315-02, Fall 2020
+//  Programming Assignment #8
+//  No sources to cite
 //
 
-/*
- The user interface has (at a minimum) a table view, a search bar, and an update location button
- When the update location button is pressed, the user’s location is fetched and used for future nearby places searches
- When the search bar’s text field is empty, the table view is empty as well
- When the search bar’s cancel button is tapped, the table view should be cleared out
- When the user types in the search bar and presses the “Search” button on the keyboard (recall: use cmd + K to bring up the keyboard so you can see the Search button), the app fetches nearby places the user that match user’s search text using a Google Places Nearby Search
- While fetching/parsing data, show an indeterminate progress indicator using the MBProgressHUD Cocoapod
- The app requests nearby places that
- Contain the users search text as a keyword
- Are ranked by distance to their current location
- The app displays the returned places in a table view, one cell for each place
- The cell displays (at a minimum) the place’s
- Name
- Vicinity
- Rating
- Tapping on a cell should bring you to PlaceDetailViewController’s screen
- */
+//  Created by Rebekah Hale and Sophie Braun on 11/27/20.
+//  Copyright © 2020 Rebekah Hale. All rights reserved.
+//
 
 import UIKit
 import GoogleMaps
@@ -32,10 +20,12 @@ import CoreLocation
 
 class PlaceTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, GMSMapViewDelegate, CLLocationManagerDelegate, UISearchBarDelegate {
     var places: [Place] = [Place]()
+    var placePhotos: [PlacePhoto] = [PlacePhoto]()
+    var placeDetails: [PlaceDetails] = [PlaceDetails]()
     var placesClient: GMSPlacesClient!
     var currentSearch: String = ""
     var latitude: String = ""
-    var longitude: String = ""
+    var longitude: String = "-"
     var search: Bool = false
     let locationManager = CLLocationManager()
     var currPlacesIndex: Int? = nil
@@ -46,7 +36,7 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
     
     
     @IBAction func updateLocationButton(_ sender: UIBarButtonItem) {
-        
+        tableView.reloadData()
     }
     
     @IBAction func searchButtonPressed(_ sender: UIBarButtonItem) {
@@ -84,7 +74,7 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
                 if let placeDetailVC = segue.destination as? PlaceDetailViewController {
                     if let indexPath = tableView.indexPathForSelectedRow {
                         let place = places[indexPath.row]
-                        //set placeDetailVC
+                        placeDetailVC.placeOptional = place
                     }
                 }
             }
@@ -110,10 +100,10 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
      - Parameter tableView: The Table View.
      - Parameter indexPath: The cell position.
      */
-    func tableView (_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let row = indexPath.row
         let place = places[row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "PlaceCell", for: indexPath)
         if let text = cell.textLabel, let label = cell.detailTextLabel {
             text.text = "\(place.name) (\(place.rating)⭐️)"
             label.text = "\(place.vicinity)"
@@ -149,6 +139,7 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
             tableView.reloadData()
         }
     }
+    
     func locationManager (_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let location = locations[locations.count - 1]
         let coordinate = location.coordinate
@@ -177,10 +168,12 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
             if let recievedPlaces = placeOptional {
                 print("in ViewController got the array back")
                 self.places = recievedPlaces
+                self.tableView.reloadData()
             }
             MBProgressHUD.hide(for: self.view, animated: true)
         }
-        tableView.reloadData()
+        
+        print(places)
     }
     
     func showSearchBar () {

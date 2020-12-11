@@ -2,31 +2,36 @@
 //  PlaceDetailViewController.swift
 //  PA8
 //
-//  Created by Rebekah Hale on 11/27/20.
-//  Copyright © 2020 Rebekah Hale. All rights reserved.
+//  This file handles the PLaceDetailViewController
+//  CPSC 315-02, Fall 2020
+//  Programming Assignment #8
+//  No sources to cite
 //
 
-/*
- The user interface has (at a minimum) an image view for the place’s photo and labels for the following pieces of information about the selected place
- Name
- Address
- Phone number
- Whether the place is open now or not
- At least one review’s text
- 
- More information if you want!
- Make a Place Detail request to get the above information
- While fetching/parsing data, show an indeterminate progress indicator using the MBProgressHUD Cocoapod
- */
+//  Created by Rebekah Hale and Sophie Braun on 11/27/20.
+//  Copyright © 2020 Rebekah Hale. All rights reserved.
+//
 
 import UIKit
 
 class PlaceDetailViewController: UIViewController {
     
-    
+    var placeOptional: Place? = nil
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let place = placeOptional {
+            GooglePlacesAPI.fetchPlaceDetails(placeID: place.ID) { (placeDetailsOptional) in
+                if let receivedDetailPlace = placeDetailsOptional {
+                    self.nameLabel.text = place.name
+                    self.adressLabel.text = receivedDetailPlace.formattedAddress
+                    self.phoneNumberLabel.text = receivedDetailPlace.formattedPhoneNumber
+                    self.ifOpenLabel.text = place.openingHours
+                    self.reviewText.text = receivedDetailPlace.review
+                }
+            }
+        }
 
         // Do any additional setup after loading the view.
     }

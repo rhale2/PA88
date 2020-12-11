@@ -2,8 +2,15 @@
 //  GooglePlacesAPI.swift
 //  PA8
 //
-//  Created by Sophia Braun on 12/6/20.
+//  This file handles the Google Places API & parsing JSON
+//  CPSC 315-02, Fall 2020
+//  Programming Assignment #8
+//  No sources to cite
+//
+
+//  Created by Rebekah Hale and Sophie Braun on 11/27/20.
 //  Copyright © 2020 Rebekah Hale. All rights reserved.
+//
 //
 
 import Foundation
@@ -42,7 +49,7 @@ struct GooglePlacesAPI {
         let params = [
             "key": GooglePlacesAPI.apiKey,
             "place_id": "\(placeID)",
-            "fields": "place_id,name,vicinity,rating,photos[]"
+            //"fields": "place_id,name,vicinity,rating,photos"
         ]
         
         var queryItems = [URLQueryItem]()
@@ -53,6 +60,7 @@ struct GooglePlacesAPI {
         var components = URLComponents(string: baseURL)!
         components.queryItems = queryItems
         let url = components.url!
+        print("DETAIL: \(url)")
         return url
     }
     
@@ -78,7 +86,7 @@ struct GooglePlacesAPI {
         return url
     }
     static func fetchPlaces (input: String, latitude: String, longitude: String, completion: @escaping ([Place]?) -> Void) {
-        let url = GooglePlacesAPI.googleNearBySearchesURL(input: input, latitude: latitude, longitude: latitude)
+        let url = GooglePlacesAPI.googleNearBySearchesURL(input: input, latitude: latitude, longitude: longitude)
         let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
             if let data = dataOptional, let dataString = String(data: data, encoding: .utf8) {
                 print("we got data!!!")
@@ -107,14 +115,14 @@ struct GooglePlacesAPI {
         task.resume()
     }
     
-    static func fetchPlaceDetails (placeID: String, completion: @escaping ([PlaceDetails]?) -> Void) {
+    static func fetchPlaceDetails (placeID: String, completion: @escaping (PlaceDetails?) -> Void) {
         let url = GooglePlacesAPI.googlePlaceDetailsURL(placeID: placeID)
         let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
             if let data = dataOptional, let dataString = String(data: data, encoding: .utf8) {
                 print("we got data!!!")
                 print(dataString)
                 if let places = details(fromData: data) {
-                    print("we got an [Place] with \(places.count) places")
+                    print("we got an [Place] with places")
                     DispatchQueue.main.async {
                         completion(places)
                     }
@@ -169,7 +177,6 @@ struct GooglePlacesAPI {
             var places = [Place]()
             for placeObject in placesArray {
                 if let place = place(fromJSON: placeObject) {
-                    print("appending")
                     places.append(place)
                 }
             }
@@ -184,23 +191,18 @@ struct GooglePlacesAPI {
         return nil
     }
     
-    static func details (fromData data: Data) -> [PlaceDetails]? {
+    static func details (fromData data: Data) -> PlaceDetails? {
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-            guard let jsonDictionary = jsonObject as? [String: Any], let detailArray = jsonDictionary["photos"] as? [[String: Any]] else {
+            guard let jsonDictionary = jsonObject as? [String: Any], let detailArray = jsonDictionary["result"] as? [String: Any] else {
                 print("Error parsing JSON")
                 return nil
             }
-            print("successfully got photoArray")
-            var details = [PlaceDetails]()
-            for detailsObject in detailArray {
-                if let detail = detail(fromJSON: detailsObject) {
-                    print("appending")
-                    details.append(detail)
-                }
-            }
-            if !details.isEmpty {
-                return details
+            print("successfully got details")
+            //var details = PlaceDetails
+            if let detail = detail(fromJSON: detailArray) {
+                //details.append(detail)
+                return detail
             }
         }
         catch {
@@ -221,7 +223,6 @@ struct GooglePlacesAPI {
             var photos = [PlacePhoto]()
             for photosObject in photoArray {
                 if let photo = photo(fromJSON: photosObject) {
-                    print("appending")
                     photos.append(photo)
                 }
             }
@@ -276,7 +277,11 @@ struct GooglePlacesAPI {
             return PlaceDetails(formattedPhoneNumber: "", formattedAddress: address.description, review: "")
         }
         
-        guard let review = jsonDetail["reviews"] as? [[String: Any]], let text = jsonDetail["text"] as? String else{
+        guard let reviews = jsonDetail["reviews"] as? [[String: Any]] else {
+            return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
+        }
+        
+        guard let text = jsonDetail["text"] as? String else {
             return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
         }
         
