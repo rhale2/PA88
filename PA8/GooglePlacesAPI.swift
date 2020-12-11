@@ -30,6 +30,7 @@ struct GooglePlacesAPI {
         var components = URLComponents(string: baseURL)!
         components.queryItems = queryItems
         let url = components.url!
+        print(url)
         return url
         
     }
@@ -87,6 +88,7 @@ struct GooglePlacesAPI {
                 if let places = places(fromData: data) {
                     print("we got an [Place] with \(places.count) places")
                     place = places
+                    print("PLACE: \(place)")
                 }
             }
             else {
@@ -104,7 +106,7 @@ struct GooglePlacesAPI {
         let url = GooglePlacesAPI.googlePlacePhotosURL(photoRefrence: photoRefrence)
         let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
             if let data = dataOptional, let dataString = String(data: data, encoding: .utf8) {
-                print("we got data!!!")
+                print("we got photo data!!!")
                 print(dataString)
                 imageData = data
             }
@@ -129,6 +131,7 @@ struct GooglePlacesAPI {
             var places = [Place]()
             for placeObject in placesArray {
                 if let place = place(fromJSON: placeObject) {
+                    print("appending")
                     places.append(place)
                 }
             }
@@ -162,11 +165,32 @@ struct GooglePlacesAPI {
     }
     
     static func place (fromJSON jsonPlace: [String: Any]) -> Place? {
-        guard let id = jsonPlace["place_id"] as? String, let name = jsonPlace["name"] as? String, let vicinity = jsonPlace["vicinity"] as? String, let rating = jsonPlace["rating"] as? Int, let photoArray = jsonPlace["photos"] as? [[String: Any]] else { // get photo array to have values 
+        guard let id = jsonPlace["place_id"] as? String else { // get photo array to have values
             return nil
         }
-        print(photoArray)
-        return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: photoArray.description)
+              
+        guard let name = jsonPlace["name"] as? String else { // get photo array to have values
+            return nil
+        }
+              
+        guard let vicinity = jsonPlace["vicinity"] as? String else { // get photo array to have values
+            return nil
+        }
+              
+        guard let rating = jsonPlace["rating"] as? Double else { // get photo array to have values
+            return nil
+        }
+              
+        if let photoArray = jsonPlace["photos"] as? [[String: Any]] {
+            // if there is a photo!
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: photoArray.description)
+        }
+        
+        else { // get photo array to have values
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "")
+        }
+        
+        /*return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: photoArray.description)*/
     }
     
 }

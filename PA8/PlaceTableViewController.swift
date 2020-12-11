@@ -179,13 +179,15 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
         
     func searchBar (_ searchBar: UISearchBar, textDidChange searchText: String) {
         currentSearch = searchText
-        let placesArray = GooglePlacesAPI.fetchPlaces(input: currentSearch, latitude: latitude, longitude: longitude)
         MBProgressHUD.showAdded(to: self.view, animated: true)
+        let placesArray = GooglePlacesAPI.fetchPlaces(input: currentSearch, latitude: latitude, longitude: longitude)
         
-        if let placesOptional = placesArray {
+       if let placesOptional = placesArray {
             self.places = placesOptional
+            print("the places: \(places)")
         }
         
+        print("here: \(places)")
         MBProgressHUD.hide(for: self.view, animated: true)
         tableView.reloadData()
     }
