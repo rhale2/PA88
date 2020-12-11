@@ -18,6 +18,14 @@ class PlaceDetailViewController: UIViewController {
     
     var placeOptional: Place? = nil
 
+    @IBOutlet var nameLabel: UILabel!
+    @IBOutlet var adressLabel: UILabel!
+    @IBOutlet var phoneNumberLabel: UILabel!
+    @IBOutlet var ifOpenLabel: UILabel!
+    @IBOutlet var reviewText: UITextField!
+    @IBOutlet var image: UIImageView!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -31,27 +39,11 @@ class PlaceDetailViewController: UIViewController {
                     self.reviewText.text = receivedDetailPlace.review
                 }
             }
+            GooglePlacesAPI.fetchPlacePhoto(fromURLString: place.photoRefrence) { (imageOptional) in
+                if let imageView = self.image, let image = imageOptional {
+                    imageView.image = image
+                }
+            }
         }
-
-        // Do any additional setup after loading the view.
     }
-    @IBOutlet var nameLabel: UILabel!
-    @IBOutlet var adressLabel: UILabel!
-    @IBOutlet var phoneNumberLabel: UILabel!
-    @IBOutlet var ifOpenLabel: UILabel!
-    @IBOutlet var reviewText: UITextView!
-    
-    
-   
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

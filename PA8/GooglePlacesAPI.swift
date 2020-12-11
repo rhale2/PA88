@@ -255,11 +255,28 @@ struct GooglePlacesAPI {
         guard let rating = jsonPlace["rating"] as? Double else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: "", photoRefrence: "", openingHours: "")
         }
-        guard let open = jsonPlace["open_now"] as? Bool else {
+        
+        guard let hours = jsonPlace["opening_hours"] as? [[String: Any]] else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: "")
         }
         
-        guard let photoArray = jsonPlace["photos"] as? [[String: Any]], let photoURL = jsonPlace["photo_refrence"] as? String else {
+        guard let openNow = hours.first else {
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: "")
+        }
+        
+        
+        guard let open = openNow["open_now"] as? Bool else {
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: "")
+        }
+        
+        guard let photoArray = jsonPlace["photos"] as? [[String: Any]] else {
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: open.description)
+        }
+        guard let photo = photoArray.first else {
+            return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: open.description)
+        }
+        
+        guard let photoURL = photo["photo_reference"] as? String else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: open.description)
         }
         
@@ -280,8 +297,11 @@ struct GooglePlacesAPI {
         guard let reviews = jsonDetail["reviews"] as? [[String: Any]] else {
             return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
         }
+        guard let review = reviews.first else {
+            return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
+        }
         
-        guard let text = jsonDetail["text"] as? String else {
+        guard let text = review["text"] as? String else {
             return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
         }
         

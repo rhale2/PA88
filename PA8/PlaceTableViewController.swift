@@ -168,9 +168,13 @@ class PlaceTableViewController: UIViewController, UITableViewDataSource, UITable
             if let recievedPlaces = placeOptional {
                 print("in ViewController got the array back")
                 self.places = recievedPlaces
-                self.tableView.reloadData()
             }
             MBProgressHUD.hide(for: self.view, animated: true)
+            self.tableView.reloadData()
+        }
+        if (currentSearch == "") {
+            places.removeAll()
+            self.tableView.reloadData()
         }
         
         print(places)
