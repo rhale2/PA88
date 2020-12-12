@@ -15,6 +15,9 @@
 
 import Foundation
 
+/**
+ This file holds the properties for PlaceDetails.
+ */
 struct PlaceDetails {
     var formattedPhoneNumber: String
     var formattedAddress: String

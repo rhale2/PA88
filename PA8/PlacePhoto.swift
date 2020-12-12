@@ -14,6 +14,9 @@
 
 import Foundation
 
+/**
+ Hold the information for Photos.
+ */
 struct PlacePhoto {
     var photos: String
     var photo_refrence: String

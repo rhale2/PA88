@@ -17,6 +17,9 @@ import GooglePlaces
 import GoogleMaps
 import Foundation
 
+/**
+ Holds the fields for Place.
+ */
 struct Place {
     var ID: String
     var name: String

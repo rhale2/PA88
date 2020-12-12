@@ -13,12 +13,23 @@
 //
 //
 
+
 import Foundation
 import UIKit
 
+/**
+ Handles the google nearbysearch, placedetails, and placephoto api functionality.
+ */
 struct GooglePlacesAPI {
     private static let apiKey = "AIzaSyCqr-r3261KQcBV7G_BT-HZyy7SBKdAoxs"
     
+    /**
+     Grabs the nearBySearch URL.
+     
+     - Parameter input: The searchText the that user inputs.
+     - Parameter latitude: The latitude of the user.
+     - Parameter longitude: The longitude of the user.
+     */
     static func googleNearBySearchesURL (input: String, latitude: String, longitude: String) -> URL {
         let baseURL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?"
         
@@ -39,10 +50,13 @@ struct GooglePlacesAPI {
         let url = components.url!
         print(url)
         return url
-        
     }
     
-    
+    /**
+     Grabs the placeDetails URL.
+     
+     - Parameter placeID: The placeID of the current search.
+     */
     static func googlePlaceDetailsURL (placeID: String) -> URL {
         let baseURL = "https://maps.googleapis.com/maps/api/place/details/json?"
         
@@ -63,7 +77,11 @@ struct GooglePlacesAPI {
         return url
     }
     
-    
+    /**
+     Grabs the placePhoto URL.
+     
+     - Parameter photoRefrence: The photoRefrence of the place photo.
+     */
     static func googlePlacePhotosURL (photoRefrence: String) -> URL {
         let baseURL = "https://maps.googleapis.com/maps/api/place/photo?"
         
@@ -84,6 +102,14 @@ struct GooglePlacesAPI {
         print(url)
         return url
     }
+    
+    /**
+     Fetches the Places from NearBySearch API.
+     
+     - Parameter input: The searchText the that user inputs.
+     - Parameter latitude: The latitude of the user.
+     - Parameter longitude: The longitude of the user.
+     */
     static func fetchPlaces (input: String, latitude: String, longitude: String, completion: @escaping ([Place]?) -> Void) {
         let url = GooglePlacesAPI.googleNearBySearchesURL(input: input, latitude: latitude, longitude: longitude)
         let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
@@ -114,6 +140,11 @@ struct GooglePlacesAPI {
         task.resume()
     }
     
+    /**
+     Fetches the place deatils.
+     
+     - Parameter placeID: The placeID of the current search.
+     */
     static func fetchPlaceDetails (placeID: String, completion: @escaping (PlaceDetails?) -> Void) {
         let url = GooglePlacesAPI.googlePlaceDetailsURL(placeID: placeID)
         let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
@@ -144,26 +175,36 @@ struct GooglePlacesAPI {
         task.resume()
     }
     
+    /**
+     Fetches the place photo.
+     
+     - Parameter urlString: The url of the place photo.
+     */
     static func fetchPlacePhoto (fromURLString urlString: String, completion: @escaping (UIImage?) -> Void) {
         let url = GooglePlacesAPI.googlePlacePhotosURL(photoRefrence: urlString)
-           let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
-               if let data = dataOptional, let image = UIImage(data: data) {
-                   DispatchQueue.main.async {
-                       completion(image)
-                   }
-               }
-               else {
-                   if let error = errorOptional {
-                       print("error fetching image \(error)")
-                   }
-                   DispatchQueue.main.async {
-                       completion(nil)
-                   }
-               }
-           }
-           task.resume()
-       }
+        let task = URLSession.shared.dataTask(with: url) { (dataOptional, urlResponseOptional, errorOptional) in
+            if let data = dataOptional, let image = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    completion(image)
+                }
+            }
+            else {
+                if let error = errorOptional {
+                    print("error fetching image \(error)")
+                }
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
+            }
+        }
+        task.resume()
+    }
     
+    /**
+     Grabs a place from the JSON.
+     
+     - Parameter data: The data reviced from the api request.
+     */
     static func places (fromData data: Data) -> [Place]? {
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
@@ -185,10 +226,15 @@ struct GooglePlacesAPI {
         catch {
             print("Error converting Data to JSON \(error)")
         }
-        
         return nil
     }
     
+    
+    /**
+     Grabs a place details from the JSON.
+     
+     - Parameter data: The data reviced from the api request.
+     */
     static func details (fromData data: Data) -> PlaceDetails? {
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
@@ -197,19 +243,22 @@ struct GooglePlacesAPI {
                 return nil
             }
             print("successfully got details")
-            //var details = PlaceDetails
             if let detail = detail(fromJSON: detailArray) {
-                //details.append(detail)
                 return detail
             }
         }
         catch {
             print("Error converting Data to JSON \(error)")
         }
-        
         return nil
     }
     
+    
+    /**
+     Grabs a place photo from the JSON.
+     
+     - Parameter data: The data reviced from the api request.
+     */
     static func photos (fromData data: Data) -> [PlacePhoto]? {
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
@@ -231,87 +280,82 @@ struct GooglePlacesAPI {
         catch {
             print("Error converting Data to JSON \(error)")
         }
-        
         return nil
     }
     
-    
-    
+    /**
+     Grabs place values from the JSON.
+     
+     - Parameter jsonPlace: The json used to grab values.
+     */
     static func place (fromJSON jsonPlace: [String: Any]) -> Place? {
         guard let id = jsonPlace["place_id"] as? String else {
             return Place(ID: "", name: "", vicinity: "", rating: "", photoRefrence: "", openingHours: "")
         }
-        
         guard let name = jsonPlace["name"] as? String else {
             return Place(ID: id.description, name: "", vicinity: "", rating: "", photoRefrence: "", openingHours: "")
         }
-        
         guard let vicinity = jsonPlace["vicinity"] as? String else {
             return Place(ID: id.description, name: name.description, vicinity: "", rating: "", photoRefrence: "", openingHours: "")
         }
-        
         guard let rating = jsonPlace["rating"] as? Double else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: "", photoRefrence: "", openingHours: "")
         }
-        
         guard let hours = jsonPlace["opening_hours"] as? [String: Any] else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: "")
         }
-        
         guard let openNow = hours["open_now"] as? Bool else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: "")
         }
-        
         guard let photoArray = jsonPlace["photos"] as? [[String: Any]] else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: openNow.description)
         }
         guard let photo = photoArray.first else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: openNow.description)
         }
-        
         guard let photoURL = photo["photo_reference"] as? String else {
             return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: "", openingHours: openNow.description)
         }
-        
         return Place(ID: id.description, name: name.description, vicinity: vicinity.description, rating: rating.description, photoRefrence: photoURL.description, openingHours: openNow.description)
-        
-        
     }
     
+    /**
+     Grabs place  detailsvalues from the JSON.
+     
+     - Parameter jsonDetail: The json used to grab values.
+     */
     static func detail (fromJSON jsonDetail: [String: Any]) -> PlaceDetails? {
         guard let address = jsonDetail["formatted_address"] as? String else {
             return PlaceDetails(formattedPhoneNumber: "", formattedAddress: "", review: "")
         }
-        
         guard let phoneNumber = jsonDetail["formatted_phone_number"] as? String else {
             return PlaceDetails(formattedPhoneNumber: "", formattedAddress: address.description, review: "")
         }
-        
         guard let reviews = jsonDetail["reviews"] as? [[String: Any]] else {
             return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
         }
         guard let review = reviews.first else {
             return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
         }
-        
         guard let text = review["text"] as? String else {
             return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: "")
         }
-        
         return PlaceDetails(formattedPhoneNumber: phoneNumber.description, formattedAddress: address.description, review: text.description)
     }
     
+    /**
+     Grabs place photo values from the JSON.
+     
+     - Parameter jsonPhotos: The json used to grab values.
+     */
     static func photo (fromJSON jsonPhotos: [String: Any]) -> PlacePhoto? {
         guard let photoArray = jsonPhotos["photos"] as? [[String: Any]] else { // get photo array to have values
             return PlacePhoto(photos: "", photo_refrence: "")
         }
-        
         guard let photoURL = jsonPhotos["photo_reference"] as? String else { // get photo array to have values
             return PlacePhoto(photos: photoArray.description, photo_refrence: "")
         }
         return PlacePhoto(photos: photoArray.description, photo_refrence: photoURL.description)
-        
-        
     }
     
 }

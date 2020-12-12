@@ -14,6 +14,9 @@
 
 import UIKit
 
+/**
+ Handles the detail screen for the table view.
+ */
 class PlaceDetailViewController: UIViewController {
     
     var placeOptional: Place? = nil
@@ -25,7 +28,9 @@ class PlaceDetailViewController: UIViewController {
     @IBOutlet var reviewText: UITextView!
     @IBOutlet var image: UIImageView!
     
-    
+    /**
+     Complies the view.
+     */
     override func viewDidLoad() {
         super.viewDidLoad()
         reviewText.isScrollEnabled = false
@@ -36,7 +41,12 @@ class PlaceDetailViewController: UIViewController {
                     self.nameLabel.text = place.name
                     self.adressText.text = receivedDetailPlace.formattedAddress
                     self.phoneNumberLabel.text = receivedDetailPlace.formattedPhoneNumber
-                    self.ifOpenLabel.text = place.openingHours
+                    if (place.openingHours.description == "false") {
+                        self.ifOpenLabel.text = "Open Now"
+                    }
+                    else {
+                        self.ifOpenLabel.text = "Closed"
+                    }
                     self.reviewText.text = receivedDetailPlace.review
                 }
             }
